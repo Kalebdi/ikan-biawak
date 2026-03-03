@@ -35,7 +35,6 @@
             padding-bottom: 10px;
         }
 
-        /* Layout horizontal untuk HP */
         .mobile-layout {
             display: flex;
             flex-direction: column;
@@ -46,7 +45,6 @@
             display: flex;
             gap: 8px;
             align-items: stretch;
-            position: relative; /* Untuk penempatan pesan error */
         }
 
         .url-input {
@@ -60,7 +58,7 @@
             color: #00ff00;
             text-shadow: 0 0 3px rgba(0, 255, 0, 0.7);
             min-width: 0;
-            transition: all 0.2s; /* Tambah transisi untuk border error */
+            transition: border-color 0.2s, box-shadow 0.2s;
         }
 
         .url-input:focus {
@@ -69,27 +67,83 @@
             box-shadow: 0 0 8px #39ff14;
         }
 
-        /* Gaya untuk pesan error kecil */
-        .error-feedback {
-            color: #ff0000;
+        /* ===== ERROR / SUCCESS FEEDBACK ===== */
+        .feedback-msg {
+            display: flex;
+            align-items: flex-start;
+            gap: 6px;
             font-size: 0.8em;
-            text-shadow: 0 0 5px #ff0000;
-            margin-top: -5px; /* Sedikit lebih dekat ke input */
-            margin-bottom: 5px;
-            height: 0; /* Awalnya tidak terlihat */
+            margin-top: 0;
+            max-height: 0;
             overflow: hidden;
             opacity: 0;
-            transition: all 0.3s ease-in-out;
+            transition: max-height 0.35s ease, opacity 0.3s ease, margin-top 0.3s ease;
         }
-        .error-feedback.show {
-            height: auto; /* Tampilkan tinggi */
+        .feedback-msg.show {
+            max-height: 80px;
             opacity: 1;
-            margin-top: 5px;
+            margin-top: 6px;
         }
-        .url-input.error-border {
-            border-color: #ff0000;
-            box-shadow: 0 0 8px #ff0000;
+        .feedback-msg.error  { color: #ff4444; text-shadow: 0 0 5px #ff0000; }
+        .feedback-msg.warn   { color: #ffaa00; text-shadow: 0 0 5px #ff8800; }
+        .feedback-msg.success{ color: #00ff88; text-shadow: 0 0 5px #00ff88; }
+        .feedback-msg .icon  { flex-shrink: 0; font-size: 1em; line-height: 1.4; }
+
+        /* Border states */
+        .url-input.state-error   { border-color: #ff4444; box-shadow: 0 0 8px #ff0000; }
+        .url-input.state-warn    { border-color: #ffaa00; box-shadow: 0 0 8px #ff8800; }
+        .url-input.state-success { border-color: #00ff88; box-shadow: 0 0 8px #00ff88; }
+
+        /* ===== TOAST NOTIFICATION ===== */
+        #toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(60px);
+            background: rgba(0, 30, 0, 0.95);
+            border: 1px solid #00ff88;
+            color: #00ff88;
+            font-family: 'Consolas', monospace;
+            font-size: 13px;
+            padding: 10px 20px;
+            border-radius: 6px;
+            box-shadow: 0 0 15px #00ff88;
+            opacity: 0;
+            transition: transform 0.4s ease, opacity 0.4s ease;
+            z-index: 9999;
+            white-space: nowrap;
         }
+        #toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+        #toast.toast-error {
+            border-color: #ff4444;
+            color: #ff4444;
+            box-shadow: 0 0 15px #ff0000;
+        }
+
+        /* ===== COPY BUTTON STATES ===== */
+        #copyBtn { width: 100%; margin-top: 5px; transition: all 0.2s; }
+        #copyBtn.copied { background: #00ff88; color: #000; border-color: #00ff88; box-shadow: 0 0 10px #00ff88; text-shadow: none; }
+        #copyBtn.copy-error { background: #ff4444; color: #000; border-color: #ff4444; box-shadow: 0 0 10px #ff0000; text-shadow: none; }
+
+        /* ===== URL PREVIEW ===== */
+        #urlPreview {
+            font-size: 11px;
+            color: #008800;
+            word-break: break-all;
+            max-height: 0;
+            overflow: hidden;
+            opacity: 0;
+            transition: max-height 0.3s ease, opacity 0.3s ease, margin-top 0.3s ease;
+        }
+        #urlPreview.show {
+            max-height: 60px;
+            opacity: 1;
+            margin-top: 4px;
+        }
+        #urlPreview span { color: #00cc00; }
 
         .btn-group {
             display: flex;
@@ -110,22 +164,20 @@
             transition: all 0.2s;
             white-space: nowrap;
         }
-
         button:hover {
             background: #00ff00;
             color: #000;
             box-shadow: 0 0 10px #00ff00;
         }
-
+        button:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
         .clear { border-color: #ff0000; color: #ff0000; text-shadow: 0 0 3px #ff0000; }
         .clear:hover { background: #ff0000; color: #000; box-shadow: 0 0 10px #ff0000; }
 
-        .warning-section {
-            display: flex;
-            gap: 10px;
-            align-items: flex-start;
-        }
-
+        .warning-section { display: flex; gap: 10px; align-items: flex-start; }
         .warning-box {
             flex: 1;
             background: rgba(80, 0, 0, 0.2);
@@ -135,21 +187,10 @@
             font-size: 12px;
             color: #ff6666;
             text-shadow: 0 0 3px rgba(255, 0, 0, 0.5);
-            overflow: hidden;
         }
+        .warning-box strong { color: #ff8888; display: block; margin-bottom: 5px; }
 
-        .warning-box strong {
-            color: #ff8888;
-            display: block;
-            margin-bottom: 5px;
-        }
-
-        .output-section {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
+        .output-section { display: flex; flex-direction: column; gap: 8px; }
         .output-area {
             width: 100%;
             height: 120px;
@@ -163,157 +204,314 @@
             resize: vertical;
             text-shadow: 0 0 3px rgba(0, 255, 0, 0.7);
         }
+        .output-area:focus { outline: none; border-color: #39ff14; box-shadow: 0 0 8px #39ff14; }
 
-        .output-area:focus {
-            outline: none;
-            border-color: #39ff14;
-            box-shadow: 0 0 8px #39ff14;
+        /* Character counter */
+        #charCount {
+            font-size: 10px;
+            color: #006600;
+            text-align: right;
+            transition: color 0.2s;
         }
+        #charCount.warn { color: #ffaa00; }
 
-        .footer {
-            text-align: center;
-            margin-top: 15px;
-            font-size: 11px;
-            color: #008800;
-            text-shadow: none;
-        }
+        .footer { text-align: center; margin-top: 15px; font-size: 11px; color: #008800; text-shadow: none; }
 
-        /* Responsif tambahan untuk layar sangat kecil */
         @media (max-width: 400px) {
-            .input-section {
-                flex-direction: column;
-            }
-            .btn-group {
-                justify-content: space-between;
-            }
-            button {
-                flex: 1;
-                padding: 12px 8px;
-                font-size: 13px;
-            }
+            .input-section { flex-direction: column; }
+            .btn-group { justify-content: space-between; }
+            button { flex: 1; padding: 12px 8px; font-size: 13px; }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>LoadGene</h1>
-        
+
         <div class="mobile-layout">
-            <!-- Input dan tombol dalam satu baris -->
-            <div> <!-- Wrapper untuk input dan error feedback -->
+            <!-- Input -->
+            <div>
                 <div class="input-section">
-                    <input type="url" 
-                           class="url-input" 
-                           id="githubUrl" 
-                           placeholder="Paste Disini!"
-                           autocomplete="off">
+                    <input type="url"
+                           class="url-input"
+                           id="githubUrl"
+                           placeholder="Paste URL GitHub di sini..."
+                           autocomplete="off"
+                           maxlength="500">
                     <div class="btn-group">
-                        <button class="generate" onclick="generate()">Generate</button>
+                        <button class="generate" id="generateBtn" onclick="generate()">Generate</button>
                         <button class="clear" onclick="clearAll()">Clear</button>
                     </div>
                 </div>
-                <!-- UI kecil untuk pesan error -->
-                <div id="urlErrorMsg" class="error-feedback"></div>
+                <!-- Feedback pesan (error/warn/success) -->
+                <div id="feedbackMsg" class="feedback-msg">
+                    <span class="icon" id="feedbackIcon"></span>
+                    <span id="feedbackText"></span>
+                </div>
+                <!-- URL preview (domain yang terdeteksi) -->
+                <div id="urlPreview"></div>
+                <!-- Character counter -->
+                <div id="charCount">0 / 500</div>
             </div>
 
-            <!-- Peringatan di samping (horizontal) -->
+            <!-- Peringatan -->
             <div class="warning-section">
                 <div class="warning-box">
                     <strong>⚠️ PERINGATAN:</strong>
-                    Hanya gunakan URL tepercaya! loadstring(game:HttpGet()) bisa mengeksekusi kode berbahaya. Pastikan Anda memahami resikonya.
+                    Hanya gunakan URL tepercaya! loadstring(game:HttpGet()) bisa mengeksekusi kode berbahaya. Pastikan Anda memahami risikonya.
                 </div>
             </div>
 
             <!-- Output -->
             <div class="output-section">
-                <textarea class="output-area" 
-                          id="output" 
-                          readonly 
+                <textarea class="output-area"
+                          id="output"
+                          readonly
                           placeholder="Hasil loadstring akan muncul di sini..."></textarea>
-                <button onclick="copyToClipboard()" style="width: 100%; margin-top: 5px;">📋 Copy</button>
+                <button id="copyBtn" onclick="copyToClipboard()">📋 Copy ke Clipboard</button>
             </div>
         </div>
 
         <div class="footer">
-            <p>LoadGene v1.0 | Client-Side Tool</p>
+            <p>LoadGene v1.1 | Client-Side Tool</p>
         </div>
     </div>
 
+    <!-- Toast Notification -->
+    <div id="toast"></div>
+
     <script>
-        function showUrlError(message) {
-            const urlInput = document.getElementById('githubUrl');
-            const errorMsgDiv = document.getElementById('urlErrorMsg');
-            errorMsgDiv.textContent = message;
-            errorMsgDiv.classList.add('show');
-            urlInput.classList.add('error-border');
-            document.getElementById('output').value = ''; // Kosongkan output jika ada error
+        /* ============================================================
+           KONSTANTA & UTILITAS
+        ============================================================ */
+        const VALID_PATTERNS = [
+            { re: /^https:\/\/raw\.githubusercontent\.com\/.+\/.+\/.+\/.+/, label: 'raw.githubusercontent.com' },
+            { re: /^https:\/\/raw\.github\.com\/.+\/.+\/.+\/.+/,           label: 'raw.github.com' },
+            { re: /^https:\/\/github\.com\/[^\/]+\/[^\/]+\/blob\/.+/,      label: 'github.com (blob)' },
+        ];
+
+        const MAX_LEN = 500;
+
+        /* ============================================================
+           FEEDBACK (error | warn | success | clear)
+        ============================================================ */
+        function setFeedback(type, message) {
+            const box  = document.getElementById('feedbackMsg');
+            const icon = document.getElementById('feedbackIcon');
+            const text = document.getElementById('feedbackText');
+            const inp  = document.getElementById('githubUrl');
+
+            // Reset semua class state
+            box.classList.remove('error', 'warn', 'success');
+            inp.classList.remove('state-error', 'state-warn', 'state-success');
+
+            if (!type) {
+                box.classList.remove('show');
+                return;
+            }
+
+            const icons = { error: '✖', warn: '⚠', success: '✔' };
+            icon.textContent = icons[type] || '';
+            text.textContent = message;
+            box.classList.add(type, 'show');
+            inp.classList.add('state-' + type);
         }
 
-        function clearUrlError() {
-            const urlInput = document.getElementById('githubUrl');
-            const errorMsgDiv = document.getElementById('urlErrorMsg');
-            errorMsgDiv.textContent = '';
-            errorMsgDiv.classList.remove('show');
-            urlInput.classList.remove('error-border');
+        function clearFeedback() { setFeedback(null, ''); }
+
+        /* ============================================================
+           URL PREVIEW
+        ============================================================ */
+        function setUrlPreview(url) {
+            const el = document.getElementById('urlPreview');
+            if (!url) { el.classList.remove('show'); el.innerHTML = ''; return; }
+            try {
+                const u = new URL(url);
+                el.innerHTML = '🔗 Host: <span>' + u.hostname + '</span>' +
+                               (u.pathname ? ' · Path: <span>' + u.pathname.substring(0, 60) +
+                               (u.pathname.length > 60 ? '…' : '') + '</span>' : '');
+                el.classList.add('show');
+            } catch { el.classList.remove('show'); }
         }
 
+        /* ============================================================
+           TOAST NOTIFICATION
+        ============================================================ */
+        let toastTimer;
+        function showToast(message, type = 'success', duration = 2000) {
+            const t = document.getElementById('toast');
+            clearTimeout(toastTimer);
+            t.textContent = message;
+            t.className = type === 'error' ? 'toast-error' : '';
+            // Paksa reflow agar animasi restart
+            void t.offsetWidth;
+            t.classList.add('show');
+            toastTimer = setTimeout(() => t.classList.remove('show'), duration);
+        }
+
+        /* ============================================================
+           CHARACTER COUNTER
+        ============================================================ */
+        function updateCharCount(len) {
+            const el = document.getElementById('charCount');
+            el.textContent = len + ' / ' + MAX_LEN;
+            el.className = len > MAX_LEN * 0.85 ? 'warn' : '';
+        }
+
+        /* ============================================================
+           VALIDASI URL
+           Return: { ok: bool, type: 'error'|'warn'|'success', msg: string }
+        ============================================================ */
+        function validateUrl(url) {
+            if (!url) return { ok: false, type: 'error', msg: 'URL tidak boleh kosong!' };
+
+            if (url.length > MAX_LEN)
+                return { ok: false, type: 'error', msg: 'URL terlalu panjang (maks ' + MAX_LEN + ' karakter).' };
+
+            // Harus diawali https
+            if (!url.startsWith('https://'))
+                return { ok: false, type: 'error', msg: 'URL harus menggunakan HTTPS (diawali https://).' };
+
+            // Cek apakah URL valid secara sintaks
+            let parsed;
+            try { parsed = new URL(url); }
+            catch { return { ok: false, type: 'error', msg: 'Format URL tidak valid. Periksa kembali.' }; }
+
+            // Deteksi github.com blob tapi bukan raw — tawarkan perbaikan
+            if (parsed.hostname === 'github.com' && !parsed.pathname.includes('/blob/'))
+                return { ok: false, type: 'error', msg: 'URL GitHub harus mengandung /blob/ (contoh: github.com/user/repo/blob/main/file.lua).' };
+
+            // Cocokkan dengan pola yang diizinkan
+            const match = VALID_PATTERNS.some(p => p.re.test(url));
+            if (!match)
+                return { ok: false, type: 'error', msg: 'URL harus dari raw.githubusercontent.com, raw.github.com, atau github.com (/blob/).' };
+
+            // Ekstensi file disarankan .lua / .txt
+            const pathname = parsed.pathname.toLowerCase();
+            if (!pathname.endsWith('.lua') && !pathname.endsWith('.txt') && !pathname.endsWith('.luau'))
+                return { ok: true,  type: 'warn',  msg: 'Peringatan: Ekstensi file bukan .lua/.luau/.txt. Pastikan ini file Luau yang benar.' };
+
+            return { ok: true, type: 'success', msg: 'URL valid ✔' };
+        }
+
+        /* ============================================================
+           GENERATE
+        ============================================================ */
         function generate() {
-            const url = document.getElementById('githubUrl').value.trim();
+            const url    = document.getElementById('githubUrl').value.trim();
             const output = document.getElementById('output');
-            
-            clearUrlError(); // Selalu hapus error sebelumnya saat mencoba generate
 
-            if (!url) {
-                showUrlError('URL tidak boleh kosong!');
+            const result = validateUrl(url);
+            setFeedback(result.type, result.msg);
+            setUrlPreview(result.ok ? url : null);
+
+            if (!result.ok) {
+                output.value = '';
                 return;
             }
 
-            // Validasi domain GitHub raw
-           const validPattern = /^https:\/\/(?:raw\.githubusercontent\.com|raw\.github\.com|github\.com\/[^\/]+\/[^\/]+\/blob\/.+)$/;
+            // Konversi github.com/blob → raw jika perlu
+            let finalUrl = url;
+            if (/^https:\/\/github\.com\//.test(url) && url.includes('/blob/')) {
+                finalUrl = url
+                    .replace('https://github.com/', 'https://raw.githubusercontent.com/')
+                    .replace('/blob/', '/');
+                setFeedback('success', 'URL dikonversi ke raw otomatis ✔');
+            }
 
-if (!validPattern.test(url)) {
-  showUrlError('URL harus dari raw.githubusercontent.com, raw.github.com, atau github.com (dengan path /blob/)!');
-  return;
-}
-        
-            output.value = `loadstring(game:HttpGet("${url}"))()`;
+            output.value = `loadstring(game:HttpGet("${finalUrl}"))()`;
+            showToast('✔ Loadstring berhasil dibuat!', 'success');
         }
 
-        function copyToClipboard() {
+        /* ============================================================
+           COPY KE CLIPBOARD
+        ============================================================ */
+        async function copyToClipboard() {
             const output = document.getElementById('output');
+            const btn    = document.getElementById('copyBtn');
+
             if (!output.value) {
-                // Gunakan notifikasi error kecil jika tidak ada yang disalin
-                showUrlError('Tidak ada kode untuk disalin!');
+                setFeedback('error', 'Tidak ada kode untuk disalin! Klik Generate terlebih dahulu.');
+                showToast('✖ Tidak ada kode!', 'error');
+                btn.classList.add('copy-error');
+                setTimeout(() => btn.classList.remove('copy-error'), 1500);
                 return;
             }
-            
-            output.select();
-            document.execCommand('copy');
-            
-            const btn = event.target;
-            const originalText = btn.textContent;
-            btn.textContent = '✓ Copied!';
-            setTimeout(() => btn.textContent = originalText, 1500);
-            clearUrlError(); // Hapus pesan error jika ada setelah copy berhasil
+
+            try {
+                // Gunakan Clipboard API modern jika tersedia
+                if (navigator.clipboard && window.isSecureContext) {
+                    await navigator.clipboard.writeText(output.value);
+                } else {
+                    // Fallback untuk browser lama / non-HTTPS
+                    output.select();
+                    document.execCommand('copy');
+                }
+
+                btn.textContent  = '✓ Copied!';
+                btn.classList.add('copied');
+                showToast('✔ Berhasil disalin ke clipboard!', 'success');
+
+                setTimeout(() => {
+                    btn.textContent = '📋 Copy ke Clipboard';
+                    btn.classList.remove('copied');
+                }, 1800);
+
+            } catch (err) {
+                // Clipboard gagal
+                setFeedback('error', 'Gagal menyalin! Coba salin manual dari kotak output.');
+                showToast('✖ Gagal menyalin!', 'error', 3000);
+                btn.classList.add('copy-error');
+                setTimeout(() => {
+                    btn.textContent = '📋 Copy ke Clipboard';
+                    btn.classList.remove('copy-error');
+                }, 1800);
+                console.error('[LoadGene] Clipboard error:', err);
+            }
         }
 
+        /* ============================================================
+           CLEAR ALL
+        ============================================================ */
         function clearAll() {
             document.getElementById('githubUrl').value = '';
-            document.getElementById('output').value = '';
-            clearUrlError(); // Pastikan pesan error juga hilang saat clear
+            document.getElementById('output').value    = '';
+            clearFeedback();
+            setUrlPreview(null);
+            updateCharCount(0);
+            showToast('🗑 Dibersihkan', 'success', 1200);
         }
 
-        // Enter untuk generate
-        document.getElementById('githubUrl').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault(); // Mencegah form submit jika ada
-                generate();
-            }
+        /* ============================================================
+           EVENT LISTENERS
+        ============================================================ */
+        const inputEl = document.getElementById('githubUrl');
+
+        // Enter → generate
+        inputEl.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') { e.preventDefault(); generate(); }
         });
-        // Clear error saat user mulai mengetik lagi
-        document.getElementById('githubUrl').addEventListener('input', function() {
-            clearUrlError();
+
+        // Hapus feedback & update counter saat mengetik
+        inputEl.addEventListener('input', function () {
+            clearFeedback();
+            setUrlPreview(null);
+            updateCharCount(this.value.length);
+        });
+
+        // Paste: beri sedikit delay agar value sudah terupdate lalu validasi otomatis
+        inputEl.addEventListener('paste', function () {
+            setTimeout(() => {
+                const v = this.value.trim();
+                updateCharCount(v.length);
+                if (v.length > 10) {
+                    // Validasi ringan langsung setelah paste
+                    const r = validateUrl(v);
+                    setFeedback(r.type, r.msg);
+                    if (r.ok) setUrlPreview(v);
+                }
+            }, 50);
         });
     </script>
 </body>
-    </html>
+</html>

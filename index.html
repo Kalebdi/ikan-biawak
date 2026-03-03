@@ -269,12 +269,18 @@
             }
 
             // Validasi domain GitHub raw
-            const validPattern = /^https:\/\/(?:raw\.githubusercontent\.com|raw\.github\.com)\/.+$/;
-            if (!validPattern.test(url)) {
-                showUrlError('URL harus dari raw.githubusercontent.com atau raw.github.com!');
-                return;
-            }
+           const validPattern = /^https:\/\/(?:raw\.githubusercontent\.com|raw\.github\.com|github\.com\/[^\/]+\/[^\/]+\/blob\/.+)$/;
 
+if (!validPattern.test(url)) {
+  showUrlError('URL harus dari raw.githubusercontent.com, raw.github.com, atau github.com (dengan path /blob/)!');
+  return;
+}
+
+// Konversi jika perlu
+const rawUrl = convertToRaw(url);
+// Lanjutkan dengan rawUrl
+        } 
+        
             output.value = `loadstring(game:HttpGet("${url}"))()`;
         }
 

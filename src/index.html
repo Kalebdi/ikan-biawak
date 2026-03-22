@@ -3,207 +3,250 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>LoadGene</title>
+    <title>Gene</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --bg:      #060a0f;
+            --surface: #0b1220;
+            --border:  #1a3a5c;
+            --accent:  #00d4ff;
+            --accent2: #0077ff;
+            --success: #00ffaa;
+            --error:   #ff3c5a;
+            --warn:    #ffaa00;
+            --text:    #cce8ff;
+            --muted:   #3a6080;
+        }
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
-            font-family: 'Consolas', 'Courier New', monospace;
-            background: #000000;
-            color: #00ff00;
-            padding: 10px;
+            font-family: 'Share Tech Mono', monospace;
+            background: var(--bg);
+            color: var(--text);
             min-height: 100vh;
-            text-shadow: 0 0 3px rgba(0, 255, 0, 0.7);
-        }
-        .container {
-            width: 100%;
-            max-width: 100%;
-            background: rgba(0, 50, 0, 0.2);
-            border-radius: 8px;
-            box-shadow: 0 0 15px rgba(0, 255, 0, 0.8), inset 0 0 10px rgba(0, 255, 0, 0.5);
-            border: 1px solid #00ff00;
-            padding: 15px;
-        }
-        h1 {
-            text-align: center;
-            color: #00ff00;
-            text-shadow: 0 0 10px #00ff00, 0 0 20px #00ff00;
-            margin-bottom: 15px;
-            font-size: 1.8em;
-            border-bottom: 1px solid #00ff00;
-            padding-bottom: 10px;
-        }
-        .mobile-layout { display: flex; flex-direction: column; gap: 10px; }
-        .input-section  { display: flex; gap: 8px; align-items: stretch; }
-        .url-input {
-            flex: 1;
-            padding: 12px;
-            background: rgba(0, 30, 0, 0.5);
-            border: 1px solid #00cc00;
-            border-radius: 5px;
-            font-family: 'Consolas', monospace;
-            font-size: 14px;
-            color: #00ff00;
-            text-shadow: 0 0 3px rgba(0, 255, 0, 0.7);
-            min-width: 0;
-            transition: border-color 0.2s, box-shadow 0.2s;
-        }
-        .url-input:focus { outline: none; border-color: #39ff14; box-shadow: 0 0 8px #39ff14; }
-        .feedback-msg {
             display: flex;
-            align-items: flex-start;
-            gap: 6px;
-            font-size: 0.8em;
-            margin-top: 0;
-            max-height: 0;
-            overflow: hidden;
-            opacity: 0;
-            transition: max-height 0.35s ease, opacity 0.3s ease, margin-top 0.3s ease;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            overflow-x: hidden;
         }
-        .feedback-msg.show    { max-height: 80px; opacity: 1; margin-top: 6px; }
-        .feedback-msg.error   { color: #ff4444; text-shadow: 0 0 5px #ff0000; }
-        .feedback-msg.warn    { color: #ffaa00; text-shadow: 0 0 5px #ff8800; }
-        .feedback-msg.success { color: #00ff88; text-shadow: 0 0 5px #00ff88; }
-        .feedback-msg .icon   { flex-shrink: 0; font-size: 1em; line-height: 1.4; }
-        .url-input.state-error   { border-color: #ff4444; box-shadow: 0 0 8px #ff0000; }
-        .url-input.state-warn    { border-color: #ffaa00; box-shadow: 0 0 8px #ff8800; }
-        .url-input.state-success { border-color: #00ff88; box-shadow: 0 0 8px #00ff88; }
-        #toast {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%) translateY(60px);
-            background: rgba(0, 30, 0, 0.95);
-            border: 1px solid #00ff88;
-            color: #00ff88;
-            font-family: 'Consolas', monospace;
-            font-size: 13px;
-            padding: 10px 20px;
-            border-radius: 6px;
-            box-shadow: 0 0 15px #00ff88;
-            opacity: 0;
-            transition: transform 0.4s ease, opacity 0.4s ease;
-            z-index: 9999;
-            white-space: nowrap;
+        body::before {
+            content: '';
+            position: fixed; inset: 0;
+            background-image:
+                linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none; z-index: 0;
         }
-        #toast.show       { transform: translateX(-50%) translateY(0); opacity: 1; }
-        #toast.toast-error { border-color: #ff4444; color: #ff4444; box-shadow: 0 0 15px #ff0000; }
-        #copyBtn           { width: 100%; margin-top: 5px; transition: all 0.2s; }
-        #copyBtn.copied    { background: #00ff88; color: #000; border-color: #00ff88; box-shadow: 0 0 10px #00ff88; text-shadow: none; }
-        #copyBtn.copy-error{ background: #ff4444; color: #000; border-color: #ff4444; box-shadow: 0 0 10px #ff0000; text-shadow: none; }
+        body::after {
+            content: '';
+            position: fixed; top: -5%; left: 0;
+            width: 100%; height: 2px;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+            animation: scan 7s linear infinite;
+            opacity: 0.25; pointer-events: none; z-index: 0;
+        }
+        @keyframes scan { to { top: 105%; } }
+
+        .card {
+            position: relative; z-index: 1;
+            width: 100%; max-width: 480px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 28px 22px 22px;
+            box-shadow: 0 8px 40px rgba(0,0,0,0.6), 0 0 60px rgba(0,119,255,0.04);
+            animation: fadeUp 0.45s ease both;
+        }
+        @keyframes fadeUp {
+            from { opacity:0; transform:translateY(16px); }
+            to   { opacity:1; transform:translateY(0); }
+        }
+        .card::before, .card::after {
+            content: ''; position: absolute;
+            width: 16px; height: 16px;
+            border-color: var(--accent); border-style: solid; opacity: 0.6;
+        }
+        .card::before { top:-1px; left:-1px; border-width:2px 0 0 2px; border-radius:4px 0 0 0; }
+        .card::after  { bottom:-1px; right:-1px; border-width:0 2px 2px 0; border-radius:0 0 4px 0; }
+
+        /* header */
+        .header { text-align:center; margin-bottom:26px; animation: fadeUp 0.45s 0.08s ease both; }
+        .logo {
+            font-family:'Orbitron',sans-serif; font-weight:900;
+            font-size:2.6em; letter-spacing:8px; color:var(--accent);
+            text-shadow:0 0 18px rgba(0,212,255,0.5),0 0 40px rgba(0,212,255,0.2);
+        }
+        .tagline { font-size:0.65em; color:var(--muted); letter-spacing:3px; margin-top:5px; }
+        .divider {
+            height:1px;
+            background:linear-gradient(90deg,transparent,var(--border),transparent);
+            margin:0 0 22px;
+        }
+
+        /* label */
+        .lbl { font-size:0.62em; letter-spacing:2px; color:var(--muted); text-transform:uppercase; margin-bottom:5px; }
+
+        /* input row */
+        .input-row { display:flex; gap:7px; animation: fadeUp 0.45s 0.15s ease both; }
+        .url-input {
+            flex:1; min-width:0;
+            background:rgba(0,212,255,0.04);
+            border:1px solid var(--border); border-radius:7px;
+            padding:10px 13px;
+            font-family:'Share Tech Mono',monospace; font-size:13px; color:var(--text);
+            outline:none;
+            transition:border-color 0.2s, box-shadow 0.2s;
+        }
+        .url-input::placeholder { color:var(--muted); }
+        .url-input:focus { border-color:var(--accent); box-shadow:0 0 0 3px rgba(0,212,255,0.09); }
+        .url-input.state-error   { border-color:var(--error);   box-shadow:0 0 0 3px rgba(255,60,90,0.1);  }
+        .url-input.state-warn    { border-color:var(--warn);    box-shadow:0 0 0 3px rgba(255,170,0,0.1);  }
+        .url-input.state-success { border-color:var(--success); box-shadow:0 0 0 3px rgba(0,255,170,0.1); }
+
+        /* buttons */
+        .btn {
+            font-family:'Share Tech Mono',monospace; font-size:11px;
+            letter-spacing:1px; text-transform:uppercase;
+            border-radius:7px; border:1px solid; cursor:pointer;
+            padding:10px 14px; transition:all 0.18s; white-space:nowrap;
+        }
+        .btn:disabled { opacity:0.35; cursor:not-allowed; pointer-events:none; }
+        .btn-gen {
+            background:rgba(0,212,255,0.09); border-color:var(--accent); color:var(--accent);
+        }
+        .btn-gen:hover { background:var(--accent); color:var(--bg); box-shadow:0 0 14px rgba(0,212,255,0.4); }
+        .btn-clr {
+            background:rgba(255,60,90,0.06); border-color:#331122; color:#ff3c5a66;
+        }
+        .btn-clr:hover { background:rgba(255,60,90,0.14); border-color:var(--error); color:var(--error); }
+        .btn-copy {
+            width:100%; margin-top:8px;
+            background:rgba(0,119,255,0.07); border-color:var(--accent2); color:#66aaff;
+            padding:11px; font-size:11px; letter-spacing:2px;
+        }
+        .btn-copy:hover { background:var(--accent2); color:#fff; box-shadow:0 0 18px rgba(0,119,255,0.4); }
+        .btn-copy.copied {
+            background:rgba(0,255,170,0.1); border-color:var(--success); color:var(--success);
+            box-shadow:0 0 12px rgba(0,255,170,0.2);
+        }
+        .btn-copy.copy-error { background:rgba(255,60,90,0.1); border-color:var(--error); color:var(--error); }
+
+        /* feedback */
+        .feedback {
+            display:flex; gap:5px; align-items:flex-start;
+            font-size:11px; letter-spacing:0.4px;
+            max-height:0; overflow:hidden; opacity:0;
+            transition:max-height 0.3s ease, opacity 0.25s ease, margin 0.3s ease;
+        }
+        .feedback.show { max-height:50px; opacity:1; margin-top:6px; }
+        .feedback.error   { color:var(--error); }
+        .feedback.warn    { color:var(--warn); }
+        .feedback.success { color:var(--success); }
+
+        /* url preview */
         #urlPreview {
-            font-size: 11px;
-            color: #008800;
-            word-break: break-all;
-            max-height: 0;
-            overflow: hidden;
-            opacity: 0;
-            transition: max-height 0.3s ease, opacity 0.3s ease, margin-top 0.3s ease;
+            font-size:10px; color:var(--muted); word-break:break-all;
+            max-height:0; overflow:hidden; opacity:0;
+            transition:max-height 0.3s, opacity 0.25s, margin 0.3s;
         }
-        #urlPreview.show { max-height: 60px; opacity: 1; margin-top: 4px; }
-        #urlPreview span { color: #00cc00; }
-        .btn-group { display: flex; gap: 6px; flex-shrink: 0; }
-        button {
-            padding: 10px 15px;
-            border: 1px solid #00ff00;
-            border-radius: 5px;
-            background: rgba(0, 50, 0, 0.5);
-            color: #00ff00;
-            font-family: 'Consolas', monospace;
-            font-size: 14px;
-            cursor: pointer;
-            text-shadow: 0 0 3px #00ff00;
-            transition: all 0.2s;
-            white-space: nowrap;
+        #urlPreview.show { max-height:36px; opacity:1; margin-top:4px; }
+        #urlPreview span { color:#4488bb; }
+
+        /* char count */
+        #charCount { font-size:10px; color:var(--muted); text-align:right; margin-top:3px; letter-spacing:1px; }
+        #charCount.warn { color:var(--warn); }
+
+        /* warning */
+        .warn-box {
+            background:rgba(255,60,90,0.04);
+            border:1px solid #220d14; border-left:3px solid #ff3c5a33;
+            border-radius:7px; padding:9px 12px;
+            font-size:11px; color:#7a3a44; line-height:1.65;
+            margin-bottom:18px;
+            animation: fadeUp 0.45s 0.22s ease both;
         }
-        button:hover    { background: #00ff00; color: #000; box-shadow: 0 0 10px #00ff00; }
-        button:disabled { opacity: 0.4; cursor: not-allowed; pointer-events: none; }
-        .clear       { border-color: #ff0000; color: #ff0000; text-shadow: 0 0 3px #ff0000; }
-        .clear:hover { background: #ff0000; color: #000; box-shadow: 0 0 10px #ff0000; }
-        .warning-section { display: flex; gap: 10px; align-items: flex-start; }
-        .warning-box {
-            flex: 1;
-            background: rgba(80, 0, 0, 0.2);
-            border: 1px solid #ff4444;
-            border-radius: 5px;
-            padding: 10px;
-            font-size: 12px;
-            color: #ff6666;
-            text-shadow: 0 0 3px rgba(255, 0, 0, 0.5);
-        }
-        .warning-box strong { color: #ff8888; display: block; margin-bottom: 5px; }
-        .output-section { display: flex; flex-direction: column; gap: 8px; }
+        .warn-box strong { color:#aa5566; display:block; margin-bottom:2px; letter-spacing:1px; font-size:11px; }
+
+        /* output */
+        .out-section { animation: fadeUp 0.45s 0.28s ease both; }
         .output-area {
-            width: 100%;
-            height: 120px;
-            background: rgba(0, 30, 0, 0.5);
-            border: 1px solid #00cc00;
-            border-radius: 5px;
-            padding: 12px;
-            font-family: 'Consolas', monospace;
-            font-size: 14px;
-            color: #00ff00;
-            resize: vertical;
-            text-shadow: 0 0 3px rgba(0, 255, 0, 0.7);
+            width:100%; height:76px;
+            background:rgba(0,212,255,0.025);
+            border:1px solid var(--border); border-radius:7px;
+            padding:10px 13px;
+            font-family:'Share Tech Mono',monospace; font-size:12px;
+            color:#88ccff; resize:none; outline:none; line-height:1.65;
+            transition:border-color 0.2s;
         }
-        .output-area:focus { outline: none; border-color: #39ff14; box-shadow: 0 0 8px #39ff14; }
-        #charCount      { font-size: 10px; color: #006600; text-align: right; transition: color 0.2s; }
-        #charCount.warn { color: #ffaa00; }
-        .footer { text-align: center; margin-top: 15px; font-size: 11px; color: #008800; text-shadow: none; }
-        @media (max-width: 400px) {
-            .input-section { flex-direction: column; }
-            .btn-group     { justify-content: space-between; }
-            button         { flex: 1; padding: 12px 8px; font-size: 13px; }
+        .output-area:focus { border-color:var(--accent2); }
+        .output-area::placeholder { color:var(--muted); font-size:11px; }
+
+        /* toast */
+        #toast {
+            position:fixed; bottom:20px; left:50%;
+            transform:translateX(-50%) translateY(50px);
+            background:var(--surface); border:1px solid var(--accent);
+            color:var(--accent);
+            font-family:'Share Tech Mono',monospace; font-size:12px; letter-spacing:1px;
+            padding:9px 22px; border-radius:8px;
+            box-shadow:0 0 18px rgba(0,212,255,0.2);
+            opacity:0; transition:transform 0.32s ease, opacity 0.32s ease;
+            z-index:9999; white-space:nowrap; pointer-events:none;
+        }
+        #toast.show { transform:translateX(-50%) translateY(0); opacity:1; }
+        #toast.t-err { border-color:var(--error); color:var(--error); box-shadow:0 0 18px rgba(255,60,90,0.25); }
+
+        .footer { text-align:center; margin-top:20px; font-size:10px; color:#152535; letter-spacing:2px; }
+
+        @media(max-width:380px) {
+            .input-row { flex-direction:column; }
+            .logo { font-size:2em; }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>LoadGene</h1>
-        <div class="mobile-layout">
+<div class="card">
+    <div class="header">
+        <div class="logo">GENE</div>
+        <div class="tagline">Loadstring Generator</div>
+    </div>
+    <div class="divider"></div>
 
-            <div>
-                <div class="input-section">
-                    <input type="url"
-                           class="url-input"
-                           id="githubUrl"
-                           placeholder="Paste URL di sini (https://...)"
-                           autocomplete="off"
-                           maxlength="500">
-                    <div class="btn-group">
-                        <button class="generate" id="generateBtn" onclick="generate()">Generate</button>
-                        <button class="clear" onclick="clearAll()">Clear</button>
-                    </div>
-                </div>
-                <div id="feedbackMsg" class="feedback-msg">
-                    <span class="icon" id="feedbackIcon"></span>
-                    <span id="feedbackText"></span>
-                </div>
-                <div id="urlPreview"></div>
-                <div id="charCount">0 / 500</div>
-            </div>
-
-            <div class="warning-section">
-                <div class="warning-box">
-                    <strong>⚠️ PERINGATAN:</strong>
-                    Hanya gunakan URL tepercaya! loadstring(game:HttpGet()) bisa mengeksekusi kode berbahaya. Pastikan Anda memahami risikonya.
-                </div>
-            </div>
-
-            <div class="output-section">
-                <textarea class="output-area"
-                          id="output"
-                          readonly
-                          placeholder="Hasil loadstring akan muncul di sini..."></textarea>
-                <button id="copyBtn" onclick="copyToClipboard()">📋 Copy ke Clipboard</button>
-            </div>
-
+    <div style="margin-bottom:16px">
+        <div class="lbl">Target URL</div>
+        <div class="input-row">
+            <input class="url-input" id="urlInput" type="url"
+                   placeholder="https://..." autocomplete="off" maxlength="500">
+            <button class="btn btn-gen" id="genBtn" onclick="generate()">GEN</button>
+            <button class="btn btn-clr" onclick="clearAll()">CLR</button>
         </div>
-        <div class="footer">
-            <p>LoadGene v1.2 | Client-Side Tool</p>
+        <div id="feedbackMsg" class="feedback">
+            <span id="fbIcon"></span><span id="fbText"></span>
         </div>
+        <div id="urlPreview"></div>
+        <div id="charCount">0 / 500</div>
     </div>
 
-    <div id="toast"></div>
-    <script src="app.js"></script>
+    <div class="warn-box">
+        <strong>⚠ PERINGATAN</strong>
+        Hanya gunakan URL tepercaya. <code>loadstring(game:HttpGet())</code> mengeksekusi kode langsung di klien Roblox.
+    </div>
+
+    <div class="out-section">
+        <div class="lbl">Output</div>
+        <textarea class="output-area" id="output" readonly
+                  placeholder="-- hasil akan muncul di sini..."></textarea>
+        <button class="btn btn-copy" id="copyBtn" onclick="copyToClipboard()">
+            ⧉ &nbsp;COPY TO CLIPBOARD
+        </button>
+    </div>
+
+    <div class="footer">Gene v1.2 &nbsp;·&nbsp; client-side</div>
+</div>
+<div id="toast"></div>
+<script src="app.js"></script>
 </body>
 </html>

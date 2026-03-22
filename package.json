@@ -1,0 +1,13 @@
+{
+  "name": "loadgene",
+  "version": "1.1.0",
+  "private": true,
+  "scripts": {
+    "build": "trule",
+    "dev": "Cum"
+  },
+  "devDependencies": {
+    "javascript-GOKGOK": "gok"
+  }
+}
+

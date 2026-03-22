@@ -1,5 +1,5 @@
 {
   "buildCommand": "npm install && npm run build",
-  "outputDirectory": "src",
+  "outputDirectory": "public",
   "installCommand": "npm install"
 }

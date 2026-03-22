@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>LoadGene</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Consolas', 'Courier New', monospace;
+            background: #000000;
+            color: #00ff00;
+            padding: 10px;
+            min-height: 100vh;
+            text-shadow: 0 0 3px rgba(0, 255, 0, 0.7);
+        }
+        .container {
+            width: 100%;
+            max-width: 100%;
+            background: rgba(0, 50, 0, 0.2);
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.8), inset 0 0 10px rgba(0, 255, 0, 0.5);
+            border: 1px solid #00ff00;
+            padding: 15px;
+        }
+        h1 {
+            text-align: center;
+            color: #00ff00;
+            text-shadow: 0 0 10px #00ff00, 0 0 20px #00ff00;
+            margin-bottom: 15px;
+            font-size: 1.8em;
+            border-bottom: 1px solid #00ff00;
+            padding-bottom: 10px;
+        }
+        .mobile-layout { display: flex; flex-direction: column; gap: 10px; }
+        .input-section  { display: flex; gap: 8px; align-items: stretch; }
+        .url-input {
+            flex: 1;
+            padding: 12px;
+            background: rgba(0, 30, 0, 0.5);
+            border: 1px solid #00cc00;
+            border-radius: 5px;
+            font-family: 'Consolas', monospace;
+            font-size: 14px;
+            color: #00ff00;
+            text-shadow: 0 0 3px rgba(0, 255, 0, 0.7);
+            min-width: 0;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .url-input:focus { outline: none; border-color: #39ff14; box-shadow: 0 0 8px #39ff14; }
+        .feedback-msg {
+            display: flex;
+            align-items: flex-start;
+            gap: 6px;
+            font-size: 0.8em;
+            margin-top: 0;
+            max-height: 0;
+            overflow: hidden;
+            opacity: 0;
+            transition: max-height 0.35s ease, opacity 0.3s ease, margin-top 0.3s ease;
+        }
+        .feedback-msg.show    { max-height: 80px; opacity: 1; margin-top: 6px; }
+        .feedback-msg.error   { color: #ff4444; text-shadow: 0 0 5px #ff0000; }
+        .feedback-msg.warn    { color: #ffaa00; text-shadow: 0 0 5px #ff8800; }
+        .feedback-msg.success { color: #00ff88; text-shadow: 0 0 5px #00ff88; }
+        .feedback-msg .icon   { flex-shrink: 0; font-size: 1em; line-height: 1.4; }
+        .url-input.state-error   { border-color: #ff4444; box-shadow: 0 0 8px #ff0000; }
+        .url-input.state-warn    { border-color: #ffaa00; box-shadow: 0 0 8px #ff8800; }
+        .url-input.state-success { border-color: #00ff88; box-shadow: 0 0 8px #00ff88; }
+        #toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(60px);
+            background: rgba(0, 30, 0, 0.95);
+            border: 1px solid #00ff88;
+            color: #00ff88;
+            font-family: 'Consolas', monospace;
+            font-size: 13px;
+            padding: 10px 20px;
+            border-radius: 6px;
+            box-shadow: 0 0 15px #00ff88;
+            opacity: 0;
+            transition: transform 0.4s ease, opacity 0.4s ease;
+            z-index: 9999;
+            white-space: nowrap;
+        }
+        #toast.show       { transform: translateX(-50%) translateY(0); opacity: 1; }
+        #toast.toast-error { border-color: #ff4444; color: #ff4444; box-shadow: 0 0 15px #ff0000; }
+        #copyBtn           { width: 100%; margin-top: 5px; transition: all 0.2s; }
+        #copyBtn.copied    { background: #00ff88; color: #000; border-color: #00ff88; box-shadow: 0 0 10px #00ff88; text-shadow: none; }
+        #copyBtn.copy-error{ background: #ff4444; color: #000; border-color: #ff4444; box-shadow: 0 0 10px #ff0000; text-shadow: none; }
+        #urlPreview {
+            font-size: 11px;
+            color: #008800;
+            word-break: break-all;
+            max-height: 0;
+            overflow: hidden;
+            opacity: 0;
+            transition: max-height 0.3s ease, opacity 0.3s ease, margin-top 0.3s ease;
+        }
+        #urlPreview.show { max-height: 60px; opacity: 1; margin-top: 4px; }
+        #urlPreview span { color: #00cc00; }
+        .btn-group { display: flex; gap: 6px; flex-shrink: 0; }
+        button {
+            padding: 10px 15px;
+            border: 1px solid #00ff00;
+            border-radius: 5px;
+            background: rgba(0, 50, 0, 0.5);
+            color: #00ff00;
+            font-family: 'Consolas', monospace;
+            font-size: 14px;
+            cursor: pointer;
+            text-shadow: 0 0 3px #00ff00;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        button:hover    { background: #00ff00; color: #000; box-shadow: 0 0 10px #00ff00; }
+        button:disabled { opacity: 0.4; cursor: not-allowed; pointer-events: none; }
+        .clear       { border-color: #ff0000; color: #ff0000; text-shadow: 0 0 3px #ff0000; }
+        .clear:hover { background: #ff0000; color: #000; box-shadow: 0 0 10px #ff0000; }
+        .warning-section { display: flex; gap: 10px; align-items: flex-start; }
+        .warning-box {
+            flex: 1;
+            background: rgba(80, 0, 0, 0.2);
+            border: 1px solid #ff4444;
+            border-radius: 5px;
+            padding: 10px;
+            font-size: 12px;
+            color: #ff6666;
+            text-shadow: 0 0 3px rgba(255, 0, 0, 0.5);
+        }
+        .warning-box strong { color: #ff8888; display: block; margin-bottom: 5px; }
+        .output-section { display: flex; flex-direction: column; gap: 8px; }
+        .output-area {
+            width: 100%;
+            height: 120px;
+            background: rgba(0, 30, 0, 0.5);
+            border: 1px solid #00cc00;
+            border-radius: 5px;
+            padding: 12px;
+            font-family: 'Consolas', monospace;
+            font-size: 14px;
+            color: #00ff00;
+            resize: vertical;
+            text-shadow: 0 0 3px rgba(0, 255, 0, 0.7);
+        }
+        .output-area:focus { outline: none; border-color: #39ff14; box-shadow: 0 0 8px #39ff14; }
+        #charCount      { font-size: 10px; color: #006600; text-align: right; transition: color 0.2s; }
+        #charCount.warn { color: #ffaa00; }
+        .footer { text-align: center; margin-top: 15px; font-size: 11px; color: #008800; text-shadow: none; }
+        @media (max-width: 400px) {
+            .input-section { flex-direction: column; }
+            .btn-group     { justify-content: space-between; }
+            button         { flex: 1; padding: 12px 8px; font-size: 13px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>LoadGene</h1>
+        <div class="mobile-layout">
+
+            <div>
+                <div class="input-section">
+                    <input type="url"
+                           class="url-input"
+                           id="githubUrl"
+                           placeholder="Paste URL di sini (https://...)"
+                           autocomplete="off"
+                           maxlength="500">
+                    <div class="btn-group">
+                        <button class="generate" id="generateBtn" onclick="generate()">Generate</button>
+                        <button class="clear" onclick="clearAll()">Clear</button>
+                    </div>
+                </div>
+                <div id="feedbackMsg" class="feedback-msg">
+                    <span class="icon" id="feedbackIcon"></span>
+                    <span id="feedbackText"></span>
+                </div>
+                <div id="urlPreview"></div>
+                <div id="charCount">0 / 500</div>
+            </div>
+
+            <div class="warning-section">
+                <div class="warning-box">
+                    <strong>⚠️ PERINGATAN:</strong>
+                    Hanya gunakan URL tepercaya! loadstring(game:HttpGet()) bisa mengeksekusi kode berbahaya. Pastikan Anda memahami risikonya.
+                </div>
+            </div>
+
+            <div class="output-section">
+                <textarea class="output-area"
+                          id="output"
+                          readonly
+                          placeholder="Hasil loadstring akan muncul di sini..."></textarea>
+                <button id="copyBtn" onclick="copyToClipboard()">📋 Copy ke Clipboard</button>
+            </div>
+
+        </div>
+        <div class="footer">
+            <p>LoadGene v1.2 | Client-Side Tool</p>
+        </div>
+    </div>
+
+    <div id="toast"></div>
+    <script src="app.js"></script>
+</body>
+</html>
